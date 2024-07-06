@@ -6,5 +6,7 @@ setup(name='lib_test',
       author='Pablo Pila',
       # author_email='gward@python.net',
       # url='https://www.python.org/sigs/distutils-sig/',
-      packages=find_packages(include=['extra', '*.m4a', '*.py']),
-     )
+      packages=find_packages(),
+      include_package_data=True, # muy importante para que se incluyan archivos sin extension .py
+      package_data={'lib_test': ['extra/*']}, 
+)
