@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
 setup(name='lib_test',
-      version='1.71',
+      version='1.72',
       description='Python Distribution Utilities',
-      author='Pablo Pila',
-      # author_email='gward@python.net',
-      # url='https://www.python.org/sigs/distutils-sig/',
+      author='Pablo GP',
+      author_email='pablogonzalezpila@gmail.com',
+      url='https://github.com/PaulFilms/lib_test',
       packages=find_packages(),
       include_package_data=True, # muy importante para que se incluyan archivos sin extension .py
       package_data={'lib_test': ['__forms_ui/*']}, 

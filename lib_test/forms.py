@@ -21,6 +21,9 @@ from enum import Enum, auto
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import QMessageBox, QInputDialog, QDialog
 
+''' INTERNAL LIBRARIES '''
+import __resources_rc
+
 
 
 ''' INFOBOXES
