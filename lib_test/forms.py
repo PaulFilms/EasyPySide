@@ -34,7 +34,7 @@ ________________________________________________________________________________
 # current_dir = os.path.dirname(os.path.abspath(__file__))
 # ICO_INFO: QIcon = QIcon(os.path.join(current_dir, 'forms_ui', 'info.ico'))
 
-ICO_INFO = QIcon(":/__forms_ui/info.ico")
+ICO_INFO = QIcon(":/__forms/info.ico")
 
 def INFOBOX(info: str, winTitle: str = "INFO", icon: QIcon = ICO_INFO) -> None:
     '''
@@ -88,10 +88,10 @@ def INPUTBOX(info: str = None, winTitle: str = "INPUT", icon: QIcon = None) -> s
 ''' Qt CUSTOM FORMS
 ________________________________________________________________________________________________ '''
 
-from .__forms_ui import PYSIDE_QLIST
-from .__forms_ui import PYSIDE_QLIST_FORM
-from .__forms_ui import PYSIDE_QTABLE_FORM
-from .__forms_ui import PYSIDE_QMARKDOWN
+from .__forms import PYSIDE_QLIST
+from .__forms import PYSIDE_QLIST_FORM
+from .__forms import PYSIDE_QTABLE_FORM
+from .__forms import PYSIDE_QMARKDOWN
 
 class QLIST(QDialog):
     '''

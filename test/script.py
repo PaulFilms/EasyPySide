@@ -21,7 +21,7 @@ if input("_ ") == "1":
 
 print("CONVERTER .ui to .py ... [Write 1 to continue]")
 if input("_ ") == "1":
-    subprocess.run(["pyside6-uic", r"lib_test\__forms_ui\QLIST.ui", "-o", r"lib_test\__forms_ui\PYSIDE_QLIST.py"])
+    subprocess.run(["pyside6-uic", r"lib_test\__forms\QLIST.ui", "-o", r"lib_test\__forms\PYSIDE_QLIST.py"])
 
 print()
 print("FIN ------------------------------")
