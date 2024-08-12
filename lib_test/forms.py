@@ -7,11 +7,14 @@ TASK:
 WARNINGS:
     - ...
 
+
+pyside6-rcc lib_test/__resources.qrc -o lib_test/__resources_rc.py
 ________________________________________________________________________________________________ '''
 __author__ = 'PABLO GONZALEZ PILA <pablogonzalezpila@gmail.com>'
 __update__ = '2024.08.12'
 
 ''' SYSTEM LIBRARIES '''
+import os
 from enum import Enum, auto
 
 ''' EXTERNAL LIBRARIES '''
@@ -23,7 +26,12 @@ from PySide6.QtWidgets import QMessageBox, QInputDialog, QDialog
 ''' INFOBOXES
 ________________________________________________________________________________________________ '''
 
-def INFOBOX(info: str, winTitle: str = "INFO", icon: QIcon = None) -> None:
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# ICO_INFO: QIcon = QIcon(os.path.join(current_dir, 'forms_ui', 'info.ico'))
+ICO_INFO = QIcon(":/__resources_rc/info.ico")
+
+def INFOBOX(info: str, winTitle: str = "INFO", icon: QIcon = ICO_INFO) -> None:
     '''
     Information Window
     '''
@@ -81,7 +89,7 @@ class MYFONTS(Enum):
     FONT_WIDGET = QFont("Consolas", pointSize=12)
     FONT_TABLE = QFont("Consolas", pointSize=10)
 
-from .forms_ui import PYSIDE_QLIST
+from .__forms_ui import PYSIDE_QLIST
 
 class QLIST(QDialog):
     '''
