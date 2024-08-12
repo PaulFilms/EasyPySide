@@ -22,7 +22,7 @@ from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import QMessageBox, QInputDialog, QDialog
 
 ''' INTERNAL LIBRARIES '''
-import __resources_rc
+import .__resources_rc
 
 
 
@@ -32,7 +32,7 @@ ________________________________________________________________________________
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # ICO_INFO: QIcon = QIcon(os.path.join(current_dir, 'forms_ui', 'info.ico'))
-ICO_INFO = QIcon(":/__resources_rc/info.ico")
+ICO_INFO = QIcon(":/__forms_ui/info.ico")
 
 def INFOBOX(info: str, winTitle: str = "INFO", icon: QIcon = ICO_INFO) -> None:
     '''
