@@ -18,7 +18,7 @@ from typing import Tuple, List, Dict, Union
 from dataclasses import dataclass
 
 ''' EXTERNAL LIBRARIES '''
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QFont
 from PySide6.QtWidgets import QDialog, QMessageBox, QInputDialog, QHeaderView
 import markdown2
 

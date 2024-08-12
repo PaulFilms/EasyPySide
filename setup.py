@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='lib_test',
-      version='1.75',
+      version='1.751',
       description='Python Distribution Utilities',
       author='Pablo GP',
       author_email='pablogonzalezpila@gmail.com',
