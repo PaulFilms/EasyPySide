@@ -17,7 +17,7 @@ print()
 
 print("RESOURCES .qrc to .py ... [Write 1 to continue]")
 if input("_ ") == "1":
-    subprocess.run(["pyside6-rcc", r"resources.qrc", "-o", r"lib_test/resources.py"])
+    subprocess.run(["pyside6-rcc", r"lib_test\resources.qrc", "-o", r"lib_test/resources.py"])
 
 print("CONVERTER .ui to .py ... [Write 1 to continue]")
 if input("_ ") == "1":

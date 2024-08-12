@@ -1,6 +1,6 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource>
-        <file>lib_test/__forms_ui/info.ico</file>
+        <file>__forms_ui/info.ico</file>
     </qresource>
 </RCC>
