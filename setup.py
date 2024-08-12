@@ -8,5 +8,5 @@ setup(name='lib_test',
       # url='https://www.python.org/sigs/distutils-sig/',
       packages=find_packages(),
       include_package_data=True, # muy importante para que se incluyan archivos sin extension .py
-      package_data={'lib_test': ['extra/*']}, 
+      package_data={'lib_test': ['forms/*']}, 
 )
