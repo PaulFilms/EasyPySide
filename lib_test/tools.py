@@ -10,10 +10,18 @@ WARNINGS:
 
 ________________________________________________________________________________________________ '''
 
+''' SYSTEM LIBRARIES '''
 import os
-from PySide6.QtCore import QEventLoop, QTimer, QDate, QTime, QUrl
-from PySide6.QtGui import QDesktopServices
+from enum import Enum, auto
 
+''' EXTERNAL LIBRARIES '''
+from PySide6.QtCore import QEventLoop, QTimer, QDate, QTime, QUrl
+from PySide6.QtGui import QFont, QDesktopServices
+
+
+
+''' CONTENT
+________________________________________________________________________________________________ '''
 
 def TIME_SLEEP(SEG: float=1):
     '''
@@ -88,3 +96,10 @@ def PATH_OPEN(path: str = os.getcwd()):
     '''
     url = QUrl.fromLocalFile(path)
     QDesktopServices.openUrl(url)
+
+class MYFONTS(Enum):
+    '''
+    '''
+    FONT_LABEL = QFont("Roboto Black", pointSize=6, weight=8)
+    FONT_WIDGET = QFont("Consolas", pointSize=12)
+    FONT_TABLE = QFont("Consolas", pointSize=10)

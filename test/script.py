@@ -17,16 +17,11 @@ print()
 
 print("RESOURCES .qrc to .py ... [Write 1 to continue]")
 if input("_ ") == "1":
-    subprocess.run(["pyside6-rcc", r"lib_test/__resources.qrc", "-o", r"lib_test/__resources_rc.py"])
+    subprocess.run(["pyside6-rcc", r"resources.qrc", "-o", r"lib_test/resources.py"])
 
 print("CONVERTER .ui to .py ... [Write 1 to continue]")
 if input("_ ") == "1":
-    # subprocess.run(["pyside6-uic", "forms_ui/FLEXICALv3.ui", "-o", "_data/GUI.py"])
-    # subprocess.run(["pyside6-uic", "forms_ui/DEVELOPER.ui", "-o", "_data/DEV.py"])
-    # subprocess.run(["pyside6-uic", "forms_ui/CAL_DATA.ui", "-o", "_data/DIAG_CALDATA.py"])
-    # subprocess.run(["pyside6-uic", "forms_ui/TEMPLATES.ui", "-o", "_data/DIAG_TEMPLATE.py"])
-    # subprocess.run(["pyside6-uic", "forms_ui/AUTOMATION.ui", "-o", "_data/DIAG_AUTOMATION.py"])
-    pass
+    subprocess.run(["pyside6-uic", r"lib_test\__forms_ui\QLIST.ui", "-o", r"lib_test\__forms_ui\PYSIDE_QLIST.py"])
 
 print()
 print("FIN ------------------------------")
