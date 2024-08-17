@@ -4,6 +4,7 @@ setup(
       name='lib_test',
       version='1.754',
       description='Python Distribution Utilities',
+      long_description = "README.md",
       author='Pablo GP',
       author_email='pablogonzalezpila@gmail.com',
       url='https://github.com/PaulFilms/lib_test',
