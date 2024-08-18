@@ -49,7 +49,7 @@ def INFOBOX(info: str, winTitle: str = "INFO", icon: QIcon = ICO_INFO) -> None:
         infobox.setWindowIcon(icon)
     infobox.exec()
 
-def YESNOBOX(info: str, winTitle: str = "QUESTION", icon: QIcon = None) -> bool:
+def YESNOBOX(info: str, winTitle: str = "QUESTION", icon: QIcon = ICO_INFO) -> bool:
     '''
     Question Window with YES/NO Options
     '''
@@ -67,7 +67,7 @@ def YESNOBOX(info: str, winTitle: str = "QUESTION", icon: QIcon = None) -> bool:
     if reply == yesnobox.StandardButton.No:
         return False
 
-def INPUTBOX(info: str = None, winTitle: str = "INPUT", icon: QIcon = None) -> str:
+def INPUTBOX(info: str = None, winTitle: str = "INPUT", icon: QIcon = ICO_INFO) -> str:
     '''
     Input Window for Entering a Value
     '''
