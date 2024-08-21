@@ -273,7 +273,7 @@ def CELL_WR(TABLE: QTableWidget, ROW: int, COLUMN: int | str, VALUE):
             ITEM = QTableWidgetItem(str(VALUE))
         TABLE.setItem(ROW, COLUMN_INDEX, ITEM)
 
-def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str):
+def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> any:
     '''
     Read value of select cell \n
     `Supported cellWidget:`
@@ -287,51 +287,45 @@ def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str):
     
     `DEBUG:` 
         - QPushButton: De un boton se puede obtener el nombre para automatizar procesos
-        - QCheckBox: Al usar un layout para centrarlo, hay que mirar dentro del layout
     '''
     COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
-    ##
-    ITEM = TABLE.item(ROW, COLUMN_INDEX)
-    CELL = TABLE.cellWidget(ROW, COLUMN_INDEX)
-    value = ""
+    
     # CELL
-    if CELL == None:
-        if ITEM == None:
-            value = None
-        else:
-            value = ITEM.text()
-            if value == str():
-                value = None
-    # QLineEdit / QTextEdit
-    elif type(CELL) == QLineEdit or type(CELL) == QTextEdit:
-        value = ITEM.text()
-    # QComboBox
-    elif type(CELL) == QComboBox:
-        value = CELL.currentText()
-    # QCheckBox
-    elif type(CELL) == QCheckBox:
-        value = CELL.isChecked()
-    # QSpinBox / QDoubleSpinBox
-    elif type(CELL) == QSpinBox or type(CELL) == QDoubleSpinBox:
-        value = CELL.value()
-    # QPushButton
-    elif type(CELL) == QPushButton:
-        value = CELL.text()
-    ## QDateEdit
-    elif type(CELL) == QDateEdit:
-        value = CELL.date()
-        value = DATE_QDATE_CONVERTER(value)
-    ## QWidget <LAYOUT> QCheckBox
-    elif type(CELL) == QWidget:
-        # QCheckBox
-        CHILD = CELL.findChild(type(QCheckBox()))
-        if type(CHILD) == QCheckBox:
-            value = CHILD.isChecked()
-    ## NOT IMPLEMENTED
-    else:
+    CELL = TABLE.cellWidget(ROW, COLUMN_INDEX)
+    if CELL:
+        if isinstance(CELL, QLineEdit | QTextEdit):
+            return CELL.text()
+        if isinstance(CELL, QComboBox):
+            return CELL.currentText()
+        if isinstance(CELL, QCheckBox):
+            return CELL.isChecked()
+        if isinstance(CELL, QSpinBox | QDoubleSpinBox):
+            return CELL.value()
+        if isinstance(CELL, QDateEdit):
+            return DATE_QDATE_CONVERTER(CELL.date())
+        # if isinstance(CELL, QTimeEdit):
+        #     return CELL.time()
+        if isinstance(CELL, QPushButton):
+            return CELL.text()
+
+        if isinstance(CELL, QWidget): # Layout
+            CHILD = CELL.findChild(type(QCheckBox()))
+            if isinstance(CHILD, QCheckBox):
+                return CHILD.isChecked()
+        
         print("CELL_RD", type(CELL), "/ NOT IMPLEMENTED")
-    # 
-    return value
+    
+    ## ITEM
+    ITEM = TABLE.item(ROW, COLUMN_INDEX)
+    if ITEM:
+        if ITEM.text() == str():
+            return None
+        else:
+            return ITEM.text()
+    
+    print("FAIL / NOT IMPLEMENTED")
+    return None
+
 
 def CELL_READONLY(TABLE: QTableWidget, ROW: int, COLUMN: int | str):
     '''

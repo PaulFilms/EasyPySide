@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
       name='lib_test',
-      version='1.754',
-      description='Python Distribution Utilities',
+      version='0.755',
+      description='Python PySide6 Utilities',
       long_description = "README.md",
       author='Pablo GP',
       author_email='pablogonzalezpila@gmail.com',
