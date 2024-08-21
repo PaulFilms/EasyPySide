@@ -1,28 +1,15 @@
 '''
-Toolkit with simplified functions and methods for development with PySide6
+PySide6 Custom Forms Toolkit for development 
+'''
+__update__ = '2024.08.21'
 
-TASK:
-    - Create unit test module 
-
-WARNINGS:
-    - ...
-
-
-pyside6-rcc lib_test/__resources.qrc -o lib_test/__resources_rc.py
-________________________________________________________________________________________________ '''
-__author__ = 'PABLO GONZALEZ PILA <pablogonzalezpila@gmail.com>'
-__update__ = '2024.08.12'
-
-''' SYSTEM LIBRARIES '''
 from typing import Tuple, List, Dict, Union
 from dataclasses import dataclass
 
-''' EXTERNAL LIBRARIES '''
-from PySide6.QtGui import QIcon, QFont
+from PySide6.QtGui import QIcon, QFont, QCloseEvent
 from PySide6.QtWidgets import QDialog, QMessageBox, QInputDialog, QHeaderView
 import markdown2
 
-''' INTERNAL LIBRARIES '''
 import lib_test.resources ## Resources
 from lib_test.widgets import CELL_WR, CELL_RD, CELL_CHECKBOX, CELL_SPINBOX, CELL_COMBOBOX, CELL_READONLY
 
@@ -30,9 +17,6 @@ from lib_test.widgets import CELL_WR, CELL_RD, CELL_CHECKBOX, CELL_SPINBOX, CELL
 
 ''' INFOBOXES
 ________________________________________________________________________________________________ '''
-
-# current_dir = os.path.dirname(os.path.abspath(__file__))
-# ICO_INFO: QIcon = QIcon(os.path.join(current_dir, 'forms_ui', 'info.ico'))
 
 ICO_INFO = QIcon(":/__forms/info.ico")
 
@@ -92,6 +76,7 @@ from .__forms import PYSIDE_QLIST
 from .__forms import PYSIDE_QLIST_FORM
 from .__forms import PYSIDE_QTABLE_FORM
 from .__forms import PYSIDE_QMARKDOWN
+from .__forms import PYSIDE_QACQUISITIONS
 
 class QLIST(QDialog):
     '''
@@ -316,5 +301,120 @@ class QMARKDOWN(QDialog):
         html_text = markdown2.markdown(MD_TEXT)
         self.ui.tx_preview.setHtml(html_text)
 
+class QACQUISITIONS(QDialog):
+    '''
+    QAcquisitions Form
+
+    `Args:`
+        - VALUES: Dict[str, List] -> example: {"MEASURE": [], "INDICATION": []}
+        - info: str -> Text info about parameters of acquisitions
+
+    `Warnings:`
+        - LEFT/RIGHT functions are Not Enabled by default, its necessary to config in the MainWindow
+    '''    
+    def __init__(self, VALUES: Dict[str, List] = None, info: str = str(), Window_Title: str="List", icon: QIcon = None):
+        QDialog.__init__(self)
+        self.data: Dict[str, List] = None
+
+        ''' INIT '''
+        self.ui = PYSIDE_QACQUISITIONS.Ui_Dialog()
+        self.ui.setupUi(self)
+
+        ''' WIDGETS '''
+        if icon: self.setWindowIcon(icon)
+        self.setWindowTitle(Window_Title)
+        self.ui.cb_units.clear()
+        self.ui.cb_units.addItems(["G","M","k","","m","µ","n"])
+        self.ui.cb_units.setCurrentIndex(3)
+
+        ## DATA
+        self.SET_VALUES(info=info, values=VALUES)
+        self.GET_VALUES()
+
+        ''' CONNECTIONS '''
+        self.ui.btn_addvalue.clicked.connect(self.VALUE_ADD)
+        self.ui.btn_delete.clicked.connect(self.VALUE_DEL)
+        self.ui.btn_exit.clicked.connect(self.close)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        self.GET_VALUES()
+
+    def VALUE_ADD(self) -> None:
+        '''
+        '''
+        value: float = float()
+        try:
+            value = float(self.ui.tx_value.text())
+        except:
+            value = 0
+        unit: str = self.ui.cb_units.currentText()
+        match unit:
+            case "G":
+                value = value * 1e9
+            case "M":
+                value = value * 1e6
+            case "k":
+                value = value * 1e3
+            case "":
+                value = value * 1
+            case "m":
+                value = value * 1e-3
+            case "µ":
+                value = value * 1e-6
+            case "n":
+                value = value * 1e-9
+        row = self.ui.tbl_values.rowCount()
+        self.ui.tbl_values.insertRow(row)
+        CELL_WR(self.ui.tbl_values, row, 0, self.ui.cb_type.currentText())
+        CELL_WR(self.ui.tbl_values, row, 1, value)
+        self.GET_VALUES()
+
+    def VALUE_DEL(self) -> None:
+        '''
+        '''
+        row = self.ui.tbl_values.currentRow()
+        if row < 0:
+            return
+        self.ui.tbl_values.removeRow(row)
+        self.GET_VALUES()
+    
+    def EXIT(self) -> None:
+        '''
+        '''
+        self.GET_VALUES()
+        self.close()
+    
+    def SET_VALUES(self, info: str = str(), values: Dict[str, List] = None) -> None:
+        self.ui.tx_info.setText(info)
+        ## TABLE
+        self.data = None
+        self.ui.tx_value.clear()
+        self.ui.cb_type.clear()
+        self.ui.tbl_values.setRowCount(0)
+        if values:
+            self.ui.cb_type.addItems(list(values.keys()))
+            for _type, _values in values.items():
+                for value in _values:
+                    row = self.ui.tbl_values.rowCount()
+                    self.ui.tbl_values.insertRow(row)
+                    CELL_WR(self.ui.tbl_values, row, 0, _type)
+                    CELL_WR(self.ui.tbl_values, row, 1, value)
+        else:
+            self.ui.cb_type.addItem("-")
+        self.ui.tx_value.setFocus()
+        self.GET_VALUES()
+
+    def GET_VALUES(self) -> None:
+        '''
+        Add current acquisition to self.data like dict
+        '''
+        self.data = dict()
+        for item in range(self.ui.cb_type.count()):
+            self.data[self.ui.cb_type.itemText(item)] = list()
+        for row in range(self.ui.tbl_values.rowCount()):
+            try:
+                self.data[CELL_RD(self.ui.tbl_values, row, 0)].append(float(CELL_RD(self.ui.tbl_values, row, 1)))
+            except:
+                self.data[CELL_RD(self.ui.tbl_values, row, 0)].append(0.0)
 
 ...
