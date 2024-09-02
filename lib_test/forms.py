@@ -18,9 +18,9 @@ from lib_test.widgets import CELL_WR, CELL_RD, CELL_CHECKBOX, CELL_SPINBOX, CELL
 ''' INFOBOXES
 ________________________________________________________________________________________________ '''
 
-ICO_INFO = QIcon(":/__forms/info.ico")
+# ICO_INFO = QIcon(":/__forms/info.ico")
 
-def INFOBOX(info: str, winTitle: str = "INFO", icon: QIcon = ICO_INFO) -> None:
+def INFOBOX(info: str, winTitle: str = "INFO", icon: QIcon = None) -> None:
     '''
     Information Window
     '''
@@ -31,9 +31,11 @@ def INFOBOX(info: str, winTitle: str = "INFO", icon: QIcon = ICO_INFO) -> None:
     infobox.setText(info)
     if icon:
         infobox.setWindowIcon(icon)
+    else:
+        infobox.setWindowIcon(QIcon(":/__forms/info.ico"))
     infobox.exec()
 
-def YESNOBOX(info: str, winTitle: str = "QUESTION", icon: QIcon = ICO_INFO) -> bool:
+def YESNOBOX(info: str, winTitle: str = "QUESTION", icon: QIcon = None) -> bool:
     '''
     Question Window with YES/NO Options
     '''
@@ -45,13 +47,15 @@ def YESNOBOX(info: str, winTitle: str = "QUESTION", icon: QIcon = ICO_INFO) -> b
     yesnobox.setText(info)
     if icon:
         yesnobox.setWindowIcon(icon)
+    else:
+        yesnobox.setWindowIcon(QIcon(":/__forms/info.ico"))
     reply = yesnobox.exec()
     if reply == yesnobox.StandardButton.Yes:
         return True
     if reply == yesnobox.StandardButton.No:
         return False
 
-def INPUTBOX(info: str = None, winTitle: str = "INPUT", icon: QIcon = ICO_INFO) -> str:
+def INPUTBOX(info: str = None, winTitle: str = "INPUT", icon: QIcon = None) -> str:
     '''
     Input Window for Entering a Value
     '''
@@ -61,6 +65,8 @@ def INPUTBOX(info: str = None, winTitle: str = "INPUT", icon: QIcon = ICO_INFO) 
         inputbox.setLabelText(info)
     if icon:
         inputbox.setWindowIcon(icon)
+    else:
+        inputbox.setWindowIcon(QIcon(":/__forms/info.ico"))
     reply = inputbox.exec()
     if reply:
         return inputbox.textValue()
@@ -416,5 +422,3 @@ class QACQUISITIONS(QDialog):
                 self.data[CELL_RD(self.ui.tbl_values, row, 0)].append(float(CELL_RD(self.ui.tbl_values, row, 1)))
             except:
                 self.data[CELL_RD(self.ui.tbl_values, row, 0)].append(0.0)
-
-...

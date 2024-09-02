@@ -323,7 +323,7 @@ def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> any:
         else:
             return ITEM.text()
     
-    print("FAIL / NOT IMPLEMENTED")
+    print("CELL_RD FAIL / NOT IMPLEMENTED")
     return None
 
 

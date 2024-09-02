@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
       name='lib_test',
-      version='0.756',
+      version='0.760',
       description='Python PySide6 Utilities',
       long_description = "README.md",
       author='Pablo GP',
