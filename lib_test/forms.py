@@ -1,7 +1,7 @@
 '''
 PySide6 Custom Forms Toolkit for development 
 '''
-__update__ = '2024.08.21'
+__update__ = '2024.09.08'
 
 from typing import Tuple, List, Dict, Union
 from dataclasses import dataclass
@@ -29,10 +29,9 @@ def INFOBOX(info: str, winTitle: str = "INFO", icon: QIcon = None) -> None:
     infobox.setFont(QFont('Consolas', 10))
     infobox.setWindowTitle(winTitle)
     infobox.setText(info)
+    infobox.setWindowIcon(QIcon(":/__forms/info.ico"))
     if icon:
         infobox.setWindowIcon(icon)
-    else:
-        infobox.setWindowIcon(QIcon(":/__forms/info.ico"))
     infobox.exec()
 
 def YESNOBOX(info: str, winTitle: str = "QUESTION", icon: QIcon = None) -> bool:
@@ -45,10 +44,9 @@ def YESNOBOX(info: str, winTitle: str = "QUESTION", icon: QIcon = None) -> bool:
     yesnobox.setIcon(QMessageBox.Icon.Question)
     yesnobox.setWindowTitle(winTitle)
     yesnobox.setText(info)
+    yesnobox.setWindowIcon(QIcon(":/__forms/info.ico"))
     if icon:
         yesnobox.setWindowIcon(icon)
-    else:
-        yesnobox.setWindowIcon(QIcon(":/__forms/info.ico"))
     reply = yesnobox.exec()
     if reply == yesnobox.StandardButton.Yes:
         return True
@@ -60,13 +58,12 @@ def INPUTBOX(info: str = None, winTitle: str = "INPUT", icon: QIcon = None) -> s
     Input Window for Entering a Value
     '''
     inputbox = QInputDialog()
+    inputbox.setWindowIcon(QIcon(":/__forms/info.ico"))
+    if icon:
+        inputbox.setWindowIcon(icon)
     inputbox.setWindowTitle(winTitle)
     if info:
         inputbox.setLabelText(info)
-    if icon:
-        inputbox.setWindowIcon(icon)
-    else:
-        inputbox.setWindowIcon(QIcon(":/__forms/info.ico"))
     reply = inputbox.exec()
     if reply:
         return inputbox.textValue()
@@ -98,10 +95,11 @@ class QLIST(QDialog):
         ''' INIT '''
         self.ui = PYSIDE_QLIST.Ui_Dialog()
         self.ui.setupUi(self)
-
-        ''' WIDGETS '''
+        self.setWindowIcon(QIcon(":/__forms/info.ico"))
         if icon: self.setWindowIcon(icon)
         self.setWindowTitle(Window_Title)
+
+        ''' WIDGETS '''
         for item in LIST:
             self.ui.lst.addItem(item)
         self.data: str = None
@@ -123,17 +121,16 @@ class QLIST_FORM(QDialog):
     '''
     def __init__(self, LIST: Union[list, tuple] = None, Window_Title: str = "LIST EDIT", icon: QIcon = None, parent=None):
         QDialog.__init__(self, parent)
+        self.data: List[str] = None
         
         ''' INIT '''
         self.ui = PYSIDE_QLIST_FORM.Ui_Dialog()
         self.ui.setupUi(self)
-        self.data: List[str] = None
+        self.setWindowIcon(QIcon(":/__forms/info.ico"))
+        if icon: self.setWindowIcon(icon)
+        self.setWindowTitle(Window_Title)
 
         ''' WIDGETS '''
-        if icon:
-            self.icon: QIcon = icon
-            self.setWindowIcon(self.icon)
-        self.setWindowTitle(Window_Title)
         if LIST:
             self.ui.lst_items.addItems([item for item in LIST])
         self.GET_ITEMS()
@@ -206,10 +203,11 @@ class QTABLE_FORM(QDialog):
         ## GUI
         self.ui = PYSIDE_QTABLE_FORM.Ui_Dialog()
         self.ui.setupUi(self)
+        self.setWindowIcon(QIcon(":/__forms/info.ico"))
+        if icon: self.setWindowIcon(icon)
+        self.setWindowTitle(Window_Title)
         
         ## WIDGETS
-        self.setWindowTitle(Window_Title)
-        if self.icon: self.setWindowIcon(self.icon)
         self.ui.tbl_form.verticalHeader().setVisible(True)
         self.ui.tbl_form.setColumnCount(3)
         H_HEADERS: tuple = ("DATA", "", "INFO")
@@ -301,6 +299,7 @@ class QMARKDOWN(QDialog):
         self.ui.setupUi(self)
 
         ''' WIDGETS '''
+        self.setWindowIcon(QIcon(":/__forms/info.ico"))
         if icon: self.setWindowIcon(icon)
         self.setWindowTitle(Window_Title)
         self.ui.tx_preview.setReadOnly(True)
@@ -327,6 +326,7 @@ class QACQUISITIONS(QDialog):
         self.ui.setupUi(self)
 
         ''' WIDGETS '''
+        self.setWindowIcon(QIcon(":/__forms/info.ico"))
         if icon: self.setWindowIcon(icon)
         self.setWindowTitle(Window_Title)
         self.ui.cb_units.clear()
