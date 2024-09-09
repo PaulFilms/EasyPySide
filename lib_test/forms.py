@@ -317,7 +317,7 @@ class QACQUISITIONS(QDialog):
     `Warnings:`
         - LEFT/RIGHT functions are Not Enabled by default, its necessary to config in the MainWindow
     '''    
-    def __init__(self, VALUES: Dict[str, List] = None, info: str = str(), Window_Title: str="List", icon: QIcon = None):
+    def __init__(self, VALUES: Dict[str, List] = None, info: str = str(), Window_Title: str="ACQUISITIONS", icon: QIcon = None):
         QDialog.__init__(self)
         self.data: Dict[str, List] = None
 
