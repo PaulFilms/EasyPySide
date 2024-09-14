@@ -9,8 +9,7 @@ Sub-Library of PySide6 with simplified Python Functions
    ```
 
 `Task:`
-   - Change the module name. Examples: 'EasyPySide' or 'MyPySide' 
-   - FORMS | pyside6-rcc lib_test/__resources.qrc -o lib_test/__resources_rc.py
+   - FORMS | pyside6-rcc easypyside/__resources.qrc -o easypyside/__resources_rc.py
 
 
 `Warnings:`
