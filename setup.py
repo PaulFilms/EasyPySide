@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
       name='easypyside',
-      version='0.77',
+      version='0.77b',
       description='Python PySide6 Utilities',
       long_description = "README.md",
       author='Pablo GP',

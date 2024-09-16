@@ -10,8 +10,8 @@ from PySide6.QtGui import QIcon, QFont, QCloseEvent
 from PySide6.QtWidgets import QDialog, QMessageBox, QInputDialog, QHeaderView
 import markdown2
 
-import lib_test.resources ## Resources
-from lib_test.widgets import CELL_WR, CELL_RD, CELL_CHECKBOX, CELL_SPINBOX, CELL_COMBOBOX, CELL_READONLY
+import easypyside.resources ## Resources
+from easypyside.widgets import CELL_WR, CELL_RD, CELL_CHECKBOX, CELL_SPINBOX, CELL_COMBOBOX, CELL_READONLY
 
 
 
