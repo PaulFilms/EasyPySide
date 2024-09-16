@@ -5,7 +5,7 @@ Sub-Library of PySide6 with simplified Python Functions
 - Latest development version
 
    ```plaintext
-   pip install git+https://github.com/PaulFilms/lib_test.git@main
+   pip install git+https://github.com/PaulFilms/EasyPySide@main
    ```
 
 `Task:`
