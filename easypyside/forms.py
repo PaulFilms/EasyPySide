@@ -422,3 +422,6 @@ class QACQUISITIONS(QDialog):
                 self.data[CELL_RD(self.ui.tbl_values, row, 0)].append(float(CELL_RD(self.ui.tbl_values, row, 1)))
             except:
                 self.data[CELL_RD(self.ui.tbl_values, row, 0)].append(0.0)
+
+class QTEXT_FORM(QDialog):
+    ...
