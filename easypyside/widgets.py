@@ -412,16 +412,16 @@ def CELL_CHECKBOB_LAYOUT(TABLE: QTableWidget, ROW: int, COLUMN: int | str, STATE
     ##
     TABLE.setCellWidget(ROW, COLUMN_INDEX, widget)
 
-def CELL_SPINBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, VALUE: int = 0, MIN: int = 0, MAX: int = 99):
+def CELL_SPINBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, VALUE: int, MIN: int = 0, MAX: int = 99):
     '''
     setCellWidget -> QSpinBox
     '''
     COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
     ##
     widget = QSpinBox()
-    widget.setValue(VALUE)
     widget.setMinimum(MIN)
     widget.setMaximum(MAX)
+    widget.setValue(VALUE)
     ##
     TABLE.setCellWidget(ROW, COLUMN_INDEX, widget)
 
@@ -474,6 +474,8 @@ def CELL_COLOR(TABLE: QTableWidget, ROW: int, COLUMN: int | str, COLOR: QColor) 
     if TABLE.item(ROW, COLUMN_INDEX) is None:
         TABLE.setItem(ROW, COLUMN_INDEX, QTableWidgetItem())
     item = TABLE.item(ROW, COLUMN_INDEX)
+    # item.setBackground(None)
+    # if COLOR:
     item.setBackground(COLOR)
 
 @dataclass

@@ -1,5 +1,5 @@
 pyside6
 # PyQtDarkTheme @ git+https://github.com/PaulFilms/PyQtDarkTheme.git
--r PyQtDarkTheme
+# -r PyQtDarkTheme
 pandas
 markdown2
