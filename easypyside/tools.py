@@ -77,7 +77,7 @@ def DATE_QDATE_CONVERTER(DATE: QDate) -> str:
     DATE = f"{YEAR}-{MONTH}-{DAY}"
     return DATE
 
-def TIME_STR_CONVERTER(TIME: str = "00:00") -> QTime:
+def TIME_STR_CONVERTER(TIME: str = "00:00") -> QTime | None:
     '''
     Convert string format time to QTime
     TIME str Format: hh:mm
@@ -85,8 +85,7 @@ def TIME_STR_CONVERTER(TIME: str = "00:00") -> QTime:
     try:
         hour: int = int(TIME[:2])
         minute: int = int(TIME[-2:])
-        time = QTime(hour, minute)
-        return time
+        return QTime(hour, minute)
     except:
         return None
 

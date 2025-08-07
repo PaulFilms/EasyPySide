@@ -1,38 +1,35 @@
 '''
 Toolkit with simplified functions and methods for development with PySide6
-
-TASK:
-    - Create unit test module 
-
-WARNINGS:
-    - ...
-
-________________________________________________________________________________________________ '''
+'''
 __author__ = 'PABLO GONZALEZ PILA <pablogonzalezpila@gmail.com>'
-__update__ = '2024.08.12'
+__update__ = '2025.08.06'
 
 ''' SYSTEM LIBRARIES '''
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import List, Tuple
+# from re import match
+from typing import Any, List, Tuple, TYPE_CHECKING
+# from unittest import case
 
 ''' EXTERNAL LIBRARIES '''
 from PySide6.QtCore import QDate, QTime, Qt
 from PySide6.QtGui import QFont, QColor
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QHeaderView
-from PySide6.QtWidgets import QLineEdit, QTextEdit, QComboBox, QSpinBox, QDoubleSpinBox, QCheckBox, QDateEdit, QTimeEdit, QPushButton
+from PySide6.QtWidgets import QLineEdit, QTextEdit, QComboBox, QSpinBox, QDoubleSpinBox, QCheckBox, QDateEdit, QTimeEdit, QPushButton, QPlainTextEdit
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
-import pandas as pd
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 ''' INTERNAL LIBRARIES '''
-from .tools import DATE_QDATE_CONVERTER
+from .tools import DATE_QDATE_CONVERTER, DATE_STR_CONVERTER, TIME_STR_CONVERTER
 
 
 
 ''' CONTENT
 ________________________________________________________________________________________________ '''
 
-def WIDGET_WR(WIDGET, VALUE: None) -> None:
+def WIDGET_WR(WIDGET: QWidget, VALUE: Any) -> None:
     '''
     Edit value in selected QtWidgets \n
     
@@ -45,113 +42,112 @@ def WIDGET_WR(WIDGET, VALUE: None) -> None:
         - QPushButton
         - QWidget (Layout) <QCheckBox>
     '''
-    ## QLineEdit
-    if type(WIDGET) == QLineEdit or type(WIDGET) == QTextEdit:
-        if VALUE == None: 
-            WIDGET.setText("")
-        else: 
-            WIDGET.setText(str(VALUE))
-    ## QComboBox
-    elif type(WIDGET) == QComboBox:
-        if WIDGET.count() == 0:
-            WIDGET.addItem(str(VALUE))
-        WIDGET.setCurrentIndex(WIDGET.findText(VALUE))
-    ## QSpinBox
-    elif type(WIDGET) == QSpinBox:
-        if VALUE == None:
-            WIDGET.setValue(WIDGET.minimum())
-        else:
-            WIDGET.setValue(int(VALUE))
-    ## QDoubleSpinBox
-    elif type(WIDGET) == QDoubleSpinBox:
-        if VALUE == None:
-            WIDGET.setValue(WIDGET.minimum())
-        else:
-            WIDGET.setValue(float(VALUE))
-    ## QCheckBox
-    elif type(WIDGET) == QCheckBox:
-        if VALUE == 1 or VALUE == "1" or VALUE == True or VALUE == "TRUE": 
-            WIDGET.setChecked(True)
-        else: 
-            WIDGET.setChecked(False)
-    ## QDateEdit
-    elif type(WIDGET) == QDateEdit:
-        if VALUE == None:
-            WIDGET.setDate(QDate(WIDGET.minimumDate()))
-        elif type(VALUE) == QDate:
-            WIDGET.setDate(VALUE)
-        elif type(VALUE) == str: # 2023-01-01 / 2023-1-1
-            DATE = DATE_STR_CONVERTER(VALUE)
-            if DATE:
-                WIDGET.setDate(DATE)
+    match WIDGET:
+        case QLineEdit() | QTextEdit():
+            if not VALUE:
+                WIDGET.setText("")
+            else:
+                WIDGET.setText(str(VALUE))
+        case QComboBox():
+            if WIDGET.count() == 0:
+                WIDGET.addItem(str(VALUE))
+            WIDGET.setCurrentIndex(WIDGET.findText(VALUE))
+        case QSpinBox():
+            if not VALUE:
+                WIDGET.setValue(WIDGET.minimum())
+            else:
+                WIDGET.setValue(int(VALUE))
+        case QDoubleSpinBox():
+            if not VALUE:
+                WIDGET.setValue(WIDGET.minimum())
+            else:
+                WIDGET.setValue(float(VALUE))
+        case QCheckBox():
+            if isinstance(VALUE, bool):
+                WIDGET.setChecked(VALUE)
+            elif isinstance(VALUE, str):
+                truthy = {"1", "true", "yes", "on", "t", "y"}
+                if VALUE.lower() in truthy:
+                    isChecked: bool = True
+                else:
+                    isChecked: bool = False
+                WIDGET.setChecked(isChecked)
+            else: 
+                WIDGET.setChecked(False)
+        case QDateEdit():
+            if not VALUE:
+                WIDGET.setDate(QDate(WIDGET.minimumDate()))
+            elif isinstance(VALUE, QDate):
+                WIDGET.setDate(VALUE)
+            elif isinstance(VALUE, str): # 2023-01-01 / 2023-1-1
+                DATE = DATE_STR_CONVERTER(VALUE)
+                if DATE:
+                    WIDGET.setDate(DATE)
+                else:
+                    WIDGET.setDate(QDate(WIDGET.minimumDate()))
+        case QTimeEdit():
+            if not VALUE:
+                WIDGET.setTime(QTime(WIDGET.minimumTime()))
+            elif isinstance(VALUE, QTime):
+                WIDGET.setTime(VALUE)
+            elif isinstance(VALUE, str) and len(VALUE) == 5: # 01:12
+                time = TIME_STR_CONVERTER(VALUE)
+                if time and time.isValid():
+                    WIDGET.setTime(time)
+                else:
+                    WIDGET.setDate(QDate(WIDGET.minimumDate()))
             else:
                 WIDGET.setDate(QDate(WIDGET.minimumDate()))
-    ## QTimeEdit
-    elif type(WIDGET) == QTimeEdit:
-        if type(VALUE) == QTime:
-            WIDGET.setDate(VALUE)
-        elif VALUE and type(VALUE) == str and len(VALUE) == 5: # 01:12
-            WIDGET.setDate(DATE_STR_CONVERTER(VALUE))
-        else:
-            WIDGET.setDate(QDate(WIDGET.minimumDate()))
-    ## QPushButton
-    elif type(WIDGET) == QPushButton:
-        WIDGET.setText(str(VALUE))
-    ## QWidget <LAYOUT>
-    elif type(WIDGET) == QWidget:
-        # QCheckBox
-        CHILD = WIDGET.findChild(type(QCheckBox()))
-        if type(CHILD) == QCheckBox:
-            if VALUE == 1 or VALUE == True or VALUE == "TRUE":
-                CHILD.setChecked(True)
-            else: 
-                CHILD.setChecked(False)
-    ## NOT IMPLEMENTED
-    else:
-        print("WIDGET_WR", type(WIDGET), "/ NOT IMPLEMENTED")
+        case QPushButton():
+            WIDGET.setText(str(VALUE))
+        case QWidget(): # <LAYOUT>
+           for child in WIDGET.findChildren(QWidget):
+                try:
+                    WIDGET_WR(child, VALUE) # Recursión
+                except Exception as e:
+                    print(f"WIDGET_WR ERROR: {e} / {type(child)}")
+        ## NOT IMPLEMENTED
+        case _:
+            print("WIDGET_WR", type(WIDGET), "/ NOT IMPLEMENTED")
 
-def WIDGET_RD(WIDGET) -> str | int | float:
+def WIDGET_RD(WIDGET: QWidget) -> Any:
     '''
     Read value of selected QtWidgets
 
     `Supported QtWidgets:`
-        - QTextEdit / QLineEdit
+        - QTextEdit / QLineEdit / QPlainTextEdit
+        - QPushButton
         - QComboBox
         - QSpinBox / QDoubleSpinBox
         - QCheckBox
         - QDateEdit <str: "yyyy-mm-dd"> / QTimeEdit <str: "hh:mm">
     '''
-    ## QLineEdit
-    if type(WIDGET) == QLineEdit:
-        return WIDGET.text()
-    ## QTextEdit
-    elif type(WIDGET) == QTextEdit:
-        return WIDGET.toPlainText()
-    ## QComboBox
-    elif type(WIDGET) == QComboBox:
-        return WIDGET.currentText()
-    ## QCheckBox
-    elif type(WIDGET) == QCheckBox:
-        return WIDGET.isChecked()
-    ## QSpinBox
-    elif type(WIDGET) == QSpinBox:
-        return WIDGET.value()
-    ## QDoubleSpinBox
-    elif type(WIDGET) == QDoubleSpinBox:
-        return WIDGET.value()
-    ## QDateEdit
-    elif type(WIDGET) == QDateEdit:
-        if WIDGET.date() >= WIDGET.minimumDate():
+    match WIDGET:
+        case QLineEdit() | QTextEdit():
+            return WIDGET.text()
+        case QPlainTextEdit():
+            return WIDGET.toPlainText()
+        case QComboBox():
+            return WIDGET.currentText()
+        case QCheckBox():
+            return WIDGET.isChecked()
+        case QSpinBox() | QDoubleSpinBox():
+            return WIDGET.value()
+        case QDateEdit():
             return DATE_QDATE_CONVERTER(WIDGET.date())
-        else:
+        case QTimeEdit():
+            return f"{WIDGET.time().hour():02d}:{WIDGET.time().minute():02d}"
+        case QPushButton():
+            return WIDGET.text()
+        case QWidget(): # <LAYOUT> ⚠️
+            for child in WIDGET.findChildren(QWidget):
+                try:
+                    return WIDGET_RD(child)
+                except Exception as e:
+                    print(f"WIDGET_RD ERROR: {e} / {type(child)}")
+        case _:
+            print("WIDGET_RD", type(WIDGET), "/ NOT IMPLEMENTED")
             return None
-    ## QTimeEdit
-    elif type(WIDGET) == QTimeEdit:
-        return f"{WIDGET.time().hour()}:{WIDGET.time().minute()}"
-    ## NOT IMPLEMENTED WIDGET
-    else:
-        print("WIDGET_RD", type(WIDGET), "/ NOT IMPLEMENTED")
-        return None
 
 def WIDGET_CLEAR(WIDGET, widgetEnabled: bool = False):
     '''
@@ -325,7 +321,6 @@ def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> any:
     
     print("CELL_RD FAIL / NOT IMPLEMENTED")
     return None
-
 
 def CELL_READONLY(TABLE: QTableWidget, ROW: int, COLUMN: int | str):
     '''
@@ -517,36 +512,55 @@ def TBL_POP_PANDAS_DF(TABLE: QTableWidget, DATAFRAME: pd.DataFrame, HIDE_COLUMNS
     TABLE.setRowCount(0)
     TABLE.setColumnCount(0)
     ## 
-    TABLE.setColumnCount(len(DATAFRAME.columns))
-    TABLE.setHorizontalHeaderLabels(DATAFRAME.columns)
+    columns = DATAFRAME.columns.to_list()
+    TABLE.setColumnCount(len(columns))
+    TABLE.setHorizontalHeaderLabels(columns)
     TABLE.setRowCount(len(DATAFRAME.index))
 
-    ## POPULATE TABLE FUNCTION
-    def pop_tbl(dtframe):
-        TABLE.setEnabled(False)
-        row = 0
-        for record in list(dtframe.iloc):
-            ## WRITE CELL
-            for col in list(dtframe.columns):
-                col_indx = list(dtframe.columns).index(col)
-                cell_value = record[col]
-                if not pd.isnull(cell_value):
-                    CELL_WR(TABLE, row, col_indx, record[col])
-            ## PROTECTED COLUMNS
-            for prot in PROTECTED_COLUMNS: 
-                CELL_READONLY(TABLE, row, prot)
-            row += 1
+    # def is_protected(col_idx):
+    #     # Normalize protected columns to indices for quick lookup
+    #     protected_indices = []
+    #     for prot in PROTECTED_COLUMNS:
+    #         if isinstance(prot, int):
+    #             protected_indices.append(prot)
+    #         elif isinstance(prot, str) and prot in columns:
+    #             protected_indices.append(columns.index(prot))
+    #     return col_idx in protected_indices
+    
+    ## POPULATE TABLE CELLS
+    # Populate table cells
+    for row_idx, (_, row_data) in enumerate(DATAFRAME.iterrows()):
+        for col_idx, col_name in enumerate(columns):
+            cell_value = row_data[col_name]
+            if pd.isnull(cell_value):
+                continue
+            
+            # Decide which cell widget to use based on dtype
+            dtype = DATAFRAME[col_name].dtype
+            if dtype == bool:
+                CELL_CHECKBOX(TABLE, row_idx, col_idx, cell_value)
+            # elif dtype.kind in ('i', 'u', 'f'):  # integer, unsigned, float
+            #     CELL_SPINBOX(TABLE, row_idx, col_idx, cell_value)
+            # elif dtype.kind == 'M':  # datetime64
+            #     CELL_DATEEDIT(TABLE, row_idx, col_idx, cell_value)
+            elif dtype == object and isinstance(cell_value, str):
+                CELL_TX(TABLE, row_idx, col_idx, cell_value)
+            else:
+                CELL_WR(TABLE, row_idx, col_idx, cell_value)
+            
+            # Apply protection if column is in protected list
+            # if is_protected(col_idx):
+            if col_name in PROTECTED_COLUMNS or col_idx in PROTECTED_COLUMNS:
+                CELL_READONLY(TABLE, row_idx, col_idx)
 
     ## HIDE COLUMS
     for col in HIDE_COLUMNS:
-        if type(col) == int:
+        if isinstance(col, int) and 0 <= col < len(columns):
             TABLE.setColumnHidden(col, True)
-        elif type(col) == str:
-            col_indx = list(DATAFRAME.columns).index(col)
-            TABLE.setColumnHidden(col_indx, True)
+        elif isinstance(col, str) and col in columns:
+            TABLE.setColumnHidden(columns.index(col), True)
     
     ## POP ROWS
-    pop_tbl(DATAFRAME)
     TABLE.resizeColumnsToContents()
     TABLE.setEnabled(True)
 
