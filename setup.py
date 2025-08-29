@@ -10,7 +10,7 @@ setup(
       long_description = "README.md",
       author='Pablo GP',
       author_email='pablogonzalezpila@gmail.com',
-      url='https://github.com/PaulFilms/easypyside',
+      url='https://github.com/PaulFilms/EasyPySide',
       packages=find_packages(),
       include_package_data=True,
       package_data={'easypyside': ['__forms/*']}, 
