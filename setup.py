@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
       name='easypyside',
-      version='2025-08-07',
+      version='2025.08.07',
       description='Python PySide6 Utilities',
       long_description = "README.md",
       author='Pablo GP',
