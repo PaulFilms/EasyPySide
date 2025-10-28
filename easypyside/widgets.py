@@ -17,9 +17,8 @@ from PySide6.QtGui import QFont, QColor
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QHeaderView
 from PySide6.QtWidgets import QLineEdit, QTextEdit, QComboBox, QSpinBox, QDoubleSpinBox, QCheckBox, QDateEdit, QTimeEdit, QPushButton, QPlainTextEdit
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
-
-if TYPE_CHECKING:
-    import pandas as pd
+# if TYPE_CHECKING:
+import pandas as pd
 
 ''' INTERNAL LIBRARIES '''
 from .tools import DATE_QDATE_CONVERTER, DATE_STR_CONVERTER, TIME_STR_CONVERTER
@@ -286,7 +285,7 @@ def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> any:
     '''
     COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
     
-    # CELL
+    # CELLWIDGET
     CELL = TABLE.cellWidget(ROW, COLUMN_INDEX)
     if CELL:
         if isinstance(CELL, QLineEdit | QTextEdit):
@@ -295,7 +294,7 @@ def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> any:
             return CELL.currentText()
         if isinstance(CELL, QCheckBox):
             return CELL.isChecked()
-        if isinstance(CELL, QSpinBox | QDoubleSpinBox):
+        if isinstance(CELL, (QSpinBox, QDoubleSpinBox)):
             return CELL.value()
         if isinstance(CELL, QDateEdit):
             return DATE_QDATE_CONVERTER(CELL.date())
@@ -305,21 +304,24 @@ def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> any:
             return CELL.text()
 
         if isinstance(CELL, QWidget): # Layout
-            CHILD = CELL.findChild(type(QCheckBox()))
-            if isinstance(CHILD, QCheckBox):
-                return CHILD.isChecked()
+            child_checkbox = CELL.findChild(QCheckBox)
+            if child_checkbox:
+                return child_checkbox.isChecked()
         
         print("CELL_RD", type(CELL), "/ NOT IMPLEMENTED")
+        return None
     
     ## ITEM
     ITEM = TABLE.item(ROW, COLUMN_INDEX)
     if ITEM:
-        if ITEM.text() == str():
-            return None
-        else:
-            return ITEM.text()
+        # if ITEM.text() == str():
+        #     return None
+        # else:
+        #     return ITEM.text()
+        text = ITEM.text().strip()
+        return text if text != "" else None
     
-    print("CELL_RD FAIL / NOT IMPLEMENTED")
+    print("CELL_RD FAIL / NOT IMPLEMENTED", TABLE, ROW, COLUMN)
     return None
 
 def CELL_READONLY(TABLE: QTableWidget, ROW: int, COLUMN: int | str):
@@ -383,7 +385,7 @@ def CELL_CHECKBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, STATE: bool 
     ##
     TABLE.setCellWidget(ROW, COLUMN_INDEX, checkBox)
 
-def CELL_CHECKBOB_LAYOUT(TABLE: QTableWidget, ROW: int, COLUMN: int | str, STATE: bool = False) -> None:
+def CELL_CHECKBOX_LAYOUT(TABLE: QTableWidget, ROW: int, COLUMN: int | str, STATE: bool = False) -> QCheckBox:
     '''
     setCellWidget -> QWidget <QCheckBox>
     Set the QCheckBox centered into cell
@@ -391,21 +393,26 @@ def CELL_CHECKBOB_LAYOUT(TABLE: QTableWidget, ROW: int, COLUMN: int | str, STATE
     COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
     ##
     widget = QWidget()
-    item = QCheckBox()
-    if STATE == 1 or STATE == "1" or STATE == True or STATE == "TRUE":
-        item.setChecked(True)
-    else:
-        item.setChecked(False)
+    # item = QCheckBox()
+    # if STATE == 1 or STATE == "1" or STATE == True or STATE == "TRUE":
+    #     item.setChecked(True)
+    # else:
+    #     item.setChecked(False)
+    checkbox = QCheckBox()
+    checkbox.setChecked(bool(STATE in [1, "1", True, "TRUE"]))
     def select_cell() -> None:
-        TABLE.setCurrentCell(ROW,COLUMN_INDEX)
-    item.stateChanged.connect(select_cell)
+        TABLE.setCurrentCell(ROW, COLUMN_INDEX)
+    # item.stateChanged.connect(select_cell)
     layout = QHBoxLayout()
     layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-    layout.addWidget(item)
+    # layout.addWidget(item)
+    layout.addWidget(checkbox)
     layout.setContentsMargins(0,0,0,0)
     widget.setLayout(layout)
     ##
     TABLE.setCellWidget(ROW, COLUMN_INDEX, widget)
+
+    return checkbox
 
 def CELL_SPINBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, VALUE: int, MIN: int = 0, MAX: int = 99):
     '''
@@ -495,7 +502,7 @@ def TBL_INIT(TABLE: QTableWidget) -> None:
     TABLE.setColumnCount(0)
     TABLE.setEnabled(True)
 
-def TBL_POP_PANDAS_DF(TABLE: QTableWidget, DATAFRAME: pd.DataFrame, HIDE_COLUMNS: list=[], PROTECTED_COLUMNS: list=[]) -> None:
+def TBL_POP_PANDAS_DF(TABLE: QTableWidget, DATAFRAME: 'pd.DataFrame', HIDE_COLUMNS: list=[], PROTECTED_COLUMNS: list=[]) -> None:
     '''
     Populate QTable with a Pandas DataFrame
     
@@ -594,7 +601,7 @@ def TBL_GET_HEADER_INDEX(TABLE: QTableWidget, COLUMN: int | str) -> int:
             print(f"CELL_RD ERROR / WRONG HEADER NAME [{COLUMN}]")
             return None
 
-def TBL_GET_PANDAS_DF(TABLE: QTableWidget) -> pd.DataFrame:
+def TBL_GET_PANDAS_DF(TABLE: QTableWidget) -> 'pd.DataFrame':
     '''
     Create Pandas DataFrame from QTable data
     '''
