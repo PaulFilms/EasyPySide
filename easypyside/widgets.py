@@ -2,7 +2,7 @@
 Toolkit with simplified functions and methods for development with PySide6
 '''
 __author__ = 'PABLO GONZALEZ PILA <pablogonzalezpila@gmail.com>'
-__update__ = '2025.08.06'
+__update__ = '2025.10.28'
 
 ''' SYSTEM LIBRARIES '''
 from dataclasses import dataclass
@@ -12,7 +12,7 @@ from typing import Any, List, Tuple, TYPE_CHECKING
 # from unittest import case
 
 ''' EXTERNAL LIBRARIES '''
-from PySide6.QtCore import QDate, QTime, Qt
+from PySide6.QtCore import QDate, QTime, Qt, Signal
 from PySide6.QtGui import QFont, QColor
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QHeaderView
 from PySide6.QtWidgets import QLineEdit, QTextEdit, QComboBox, QSpinBox, QDoubleSpinBox, QCheckBox, QDateEdit, QTimeEdit, QPushButton, QPlainTextEdit
@@ -27,6 +27,33 @@ from .tools import DATE_QDATE_CONVERTER, DATE_STR_CONVERTER, TIME_STR_CONVERTER
 
 ''' CONTENT
 ________________________________________________________________________________________________ '''
+
+class CheckBoxCell(QWidget):
+    '''
+    Customized QCheckBox with center layout inside cell 
+    '''
+    # Reemitimos la señal del checkbox
+    stateChanged = Signal(int)
+
+    def __init__(self, checked=False, parent=None):
+        super().__init__(parent)
+
+        self.checkbox = QCheckBox()
+        self.checkbox.setChecked(checked)
+
+        layout = QHBoxLayout(self)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.checkbox)
+
+        # Reemitir la señal
+        self.checkbox.stateChanged.connect(self.stateChanged.emit)
+
+    def isChecked(self):
+        return self.checkbox.isChecked()
+
+    def setChecked(self, value: bool):
+        self.checkbox.setChecked(value)
 
 def WIDGET_WR(WIDGET: QWidget, VALUE: Any) -> None:
     '''
@@ -61,7 +88,7 @@ def WIDGET_WR(WIDGET: QWidget, VALUE: Any) -> None:
                 WIDGET.setValue(WIDGET.minimum())
             else:
                 WIDGET.setValue(float(VALUE))
-        case QCheckBox():
+        case QCheckBox() | CheckBoxCell():
             if isinstance(VALUE, bool):
                 WIDGET.setChecked(VALUE)
             elif isinstance(VALUE, str):
@@ -129,6 +156,8 @@ def WIDGET_RD(WIDGET: QWidget) -> Any:
         case QComboBox():
             return WIDGET.currentText()
         case QCheckBox():
+            return WIDGET.isChecked()
+        case CheckBoxCell():
             return WIDGET.isChecked()
         case QSpinBox() | QDoubleSpinBox():
             return WIDGET.value()
@@ -277,7 +306,7 @@ def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> any:
         - QComboBox
         - QSpinBox
         - QSpinBox / QDoubleSpinBox
-        - QCheckBox
+        - QCheckBox / CheckBoxCell
         - QDateEdit
     
     `DEBUG:` 
@@ -292,7 +321,7 @@ def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> any:
             return CELL.text()
         if isinstance(CELL, QComboBox):
             return CELL.currentText()
-        if isinstance(CELL, QCheckBox):
+        if isinstance(CELL, (QCheckBox, CheckBoxCell)):
             return CELL.isChecked()
         if isinstance(CELL, (QSpinBox, QDoubleSpinBox)):
             return CELL.value()
