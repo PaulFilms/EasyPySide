@@ -260,6 +260,9 @@ def WIDGET_CONNECT(WIDGET, FUNCTION):
     ## QCheckBox
     elif type(WIDGET) == QCheckBox:
         WIDGET.stateChanged.connect(FUNCTION)
+    ## CheckBoxCell
+    elif type(WIDGET) == CheckBoxCell:
+        WIDGET.stateChanged.connect(FUNCTION)
     ## QSpinBox
     elif type(WIDGET) == QSpinBox:
         WIDGET.valueChanged.connect(FUNCTION)
@@ -332,10 +335,10 @@ def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> any:
         if isinstance(CELL, QPushButton):
             return CELL.text()
 
-        if isinstance(CELL, QWidget): # Layout
-            child_checkbox = CELL.findChild(QCheckBox)
-            if child_checkbox:
-                return child_checkbox.isChecked()
+        # if isinstance(CELL, QWidget): # Layout
+        #     child_checkbox = CELL.findChild(QCheckBox)
+        #     if child_checkbox:
+        #         return child_checkbox.isChecked()
         
         print("CELL_RD", type(CELL), "/ NOT IMPLEMENTED")
         return None
@@ -406,7 +409,8 @@ def CELL_CHECKBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, STATE: bool 
     '''
     COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
     ##
-    checkBox = QCheckBox()
+    # checkBox = QCheckBox()
+    checkBox = CheckBoxCell()
     if STATE == 1 or STATE == True or STATE == "TRUE":
         checkBox.setChecked(True)
     else:

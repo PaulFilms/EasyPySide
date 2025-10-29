@@ -15,13 +15,14 @@ import os
 from enum import Enum, auto
 
 ''' EXTERNAL LIBRARIES '''
-from PySide6.QtCore import QEventLoop, QTimer, QDate, QTime, QUrl
-from PySide6.QtGui import QFont, QDesktopServices
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt, QEventLoop, QTimer, QDate, QTime, QUrl
+from PySide6.QtGui import QFont, QDesktopServices, QPalette, QColor
 
 
 
-''' CONTENT
-________________________________________________________________________________________________ '''
+# CONTENT
+# ________________________________________________________________________________________________ '''
 
 def TIME_SLEEP(SEG: float=1):
     '''
@@ -102,3 +103,34 @@ class MYFONTS(Enum):
     FONT_LABEL = QFont("Roboto Black", pointSize=6, weight=8)
     FONT_WIDGET = QFont("Consolas", pointSize=12)
     FONT_TABLE = QFont("Consolas", pointSize=10)
+
+
+# STYLE
+# ________________________________________________________________________________________________ '''
+
+def is_dark_mode() -> bool:
+    # Tomamos el color de fondo del sistema
+    bg = QApplication.palette().color(QPalette.Window)
+    # Si es más oscuro que un umbral, asumimos modo oscuro
+    brightness = (bg.red() * 0.299 + bg.green() * 0.587 + bg.blue() * 0.114)
+    return brightness < 128
+
+def MyFusionStyle(app: QApplication):
+    """Aplica el estilo 'Fusion' y ajusta el color alternativo según el modo del sistema."""
+
+    app.setStyle("Fusion")
+
+    def change_AlternateBase():
+        palette = app.palette()
+        scheme = app.styleHints().colorScheme()
+        if scheme == Qt.ColorScheme.Dark:
+            palette.setColor(QPalette.AlternateBase, QColor(70, 70, 70))   # gris oscuro
+        else:
+            palette.setColor(QPalette.AlternateBase, QColor(239, 239, 239))  # gris claro
+        app.setPalette(palette)
+
+    # Aplicar inmediatamente
+    change_AlternateBase()
+
+    # Conectar para actualizar automáticamente si cambia el modo del sistema
+    app.styleHints().colorSchemeChanged.connect(change_AlternateBase)
