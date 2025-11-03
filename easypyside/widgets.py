@@ -8,7 +8,7 @@ __update__ = '2025.10.28'
 from dataclasses import dataclass
 from enum import Enum, auto
 # from re import match
-from typing import Any, List, Tuple, TYPE_CHECKING
+from typing import Any, List, Tuple, Union, TYPE_CHECKING
 # from unittest import case
 
 ''' EXTERNAL LIBRARIES '''
@@ -285,7 +285,7 @@ def WIDGET_CONNECT(WIDGET, FUNCTION):
     else:
         print("WIDGET_CONNECT", type(WIDGET), "/ NOT IMPLEMENTED")
 
-def CELL_WR(TABLE: QTableWidget, ROW: int, COLUMN: int | str, VALUE):
+def CELL_WR(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], VALUE: Any):
     '''
     Write value in select cell
     '''
@@ -300,63 +300,81 @@ def CELL_WR(TABLE: QTableWidget, ROW: int, COLUMN: int | str, VALUE):
             ITEM = QTableWidgetItem(str(VALUE))
         TABLE.setItem(ROW, COLUMN_INDEX, ITEM)
 
-def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> any:
-    '''
-    Read value of select cell \n
-    `Supported cellWidget:`
-        - cellWidget
+def CELL_RD(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str]) -> Any:
+    """
+    Read value of selected cell
+
+    Supported cellWidget:
         - QLineEdit / QTextEdit
         - QComboBox
-        - QSpinBox
         - QSpinBox / QDoubleSpinBox
         - QCheckBox / CheckBoxCell
         - QDateEdit
-    
-    `DEBUG:` 
-        - QPushButton: De un boton se puede obtener el nombre para automatizar procesos
-    '''
+        - QPushButton (debug)
+    """
     COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
-    
-    # CELLWIDGET
+    # print(
+    #     'cellWidget', TABLE.cellWidget(ROW, COLUMN_INDEX), '\n',
+    #     'item', TABLE.item(ROW, COLUMN_INDEX), '\n',
+    # )
+
+    # --- 1. Try to read from cellWidget ---
     CELL = TABLE.cellWidget(ROW, COLUMN_INDEX)
     if CELL:
-        if isinstance(CELL, QLineEdit | QTextEdit):
-            return CELL.text()
-        if isinstance(CELL, QComboBox):
-            return CELL.currentText()
-        if isinstance(CELL, (QCheckBox, CheckBoxCell)):
-            return CELL.isChecked()
-        if isinstance(CELL, (QSpinBox, QDoubleSpinBox)):
-            return CELL.value()
-        if isinstance(CELL, QDateEdit):
-            return DATE_QDATE_CONVERTER(CELL.date())
-        # if isinstance(CELL, QTimeEdit):
-        #     return CELL.time()
-        if isinstance(CELL, QPushButton):
-            return CELL.text()
+        match CELL:
+            case QLineEdit() | QTextEdit():
+                return CELL.text()
+            case QComboBox():
+                return CELL.currentText()
+            case QCheckBox() | CheckBoxCell():
+                return CELL.isChecked()
+            case QSpinBox() | QDoubleSpinBox():
+                return CELL.value()
+            case QDateEdit():
+                return DATE_QDATE_CONVERTER(CELL.date())
+            case QPushButton():
+                return CELL.text()
+            case _:
+                print("CELL_RD cellWidget:", type(CELL), "/ NOT IMPLEMENTED")
+                return None
 
-        # if isinstance(CELL, QWidget): # Layout
-        #     child_checkbox = CELL.findChild(QCheckBox)
-        #     if child_checkbox:
-        #         return child_checkbox.isChecked()
-        
-        print("CELL_RD", type(CELL), "/ NOT IMPLEMENTED")
-        return None
-    
-    ## ITEM
+    # --- 2. Try to read from QTableWidgetItem ---
     ITEM = TABLE.item(ROW, COLUMN_INDEX)
     if ITEM:
-        # if ITEM.text() == str():
-        #     return None
-        # else:
-        #     return ITEM.text()
+        item_type = ITEM.data(Qt.UserRole)
+
+        # Si el ítem es checkable, devuelve bool
+        if item_type == "checkable":
+            # print('checkState')
+            return ITEM.checkState() == Qt.Checked
+
+        # Texto del item
         text = ITEM.text().strip()
-        return text if text != "" else None
-    
-    print("CELL_RD FAIL / NOT IMPLEMENTED", TABLE, ROW, COLUMN)
+        if text:
+            # print('text', text)
+            return text
+
+        # Normaliza valores comunes a tipos Python
+        # lower = text.lower()
+        # if lower in {"true", "1", "yes", "y", "on"}:
+        #     return True
+        # if lower in {"false", "0", "no", "n", "off"}:
+        #     return False
+
+        # Int o float si es posible
+        # for cast in (int, float):
+        #     try:
+        #         return cast(text)
+        #     except ValueError:
+        #         continue
+
+        # Fallback a string
+        # return text
+
+    # --- 3. Si no hay nada ---
     return None
 
-def CELL_READONLY(TABLE: QTableWidget, ROW: int, COLUMN: int | str):
+def CELL_READONLY(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str]) -> None:
     '''
     Set the cell as non-editable \n
 
@@ -378,19 +396,27 @@ def CELL_READONLY(TABLE: QTableWidget, ROW: int, COLUMN: int | str):
     ITEM.setFlags(ITEM.flags() ^ Qt.ItemFlag.ItemIsEditable)
     TABLE.setItem(ROW, COLUMN_INDEX, ITEM)
 
-def CELL_TX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, TEXT: bool | str | int | float) -> None:
+def CELL_TX(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], TEXT: Any) -> QTableWidgetItem:
     '''
     Set Text Item in selected cell
+
+    Signal : itemChanged
     '''
     COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
     ##
     TABLE.setCellWidget(ROW, COLUMN_INDEX, None)
-    ITEM = QTableWidgetItem()
-    if TEXT != None:
-        ITEM = QTableWidgetItem(str(TEXT))
-    TABLE.setItem(ROW, COLUMN_INDEX, ITEM)
+    ITEM = QTableWidgetItem("" if TEXT is None else str(TEXT))
 
-def CELL_COMBOBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, LIST: list | tuple, EDITABLE: bool = False) -> None:
+    # Desactivar momentáneamente la señal para evitar recursión
+    # try:
+    #     TABLE.blockSignals(True)
+    TABLE.setItem(ROW, COLUMN_INDEX, ITEM)
+    # finally:
+    #     TABLE.blockSignals(False)
+
+    return ITEM
+
+def CELL_COMBOBOX(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], LIST: list | tuple, EDITABLE: bool = False) -> QComboBox:
     '''
     setCellWidget -> QComboBox
     '''
@@ -402,8 +428,20 @@ def CELL_COMBOBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, LIST: list |
     combo.addItems(LIST)
     ##
     TABLE.setCellWidget(ROW,COLUMN_INDEX,combo)
+    return combo
 
-def CELL_CHECKBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, STATE: bool = False) -> None:
+def CELL_CHECKSTATE(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], VALUE: bool) -> QTableWidgetItem:
+    COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
+    item_check = QTableWidgetItem()
+    item_check.setFlags(item_check.flags() | Qt.ItemIsUserCheckable)
+    if VALUE:
+        item_check.setCheckState(Qt.Checked)
+    else:
+        item_check.setCheckState(Qt.Unchecked)
+    TABLE.setItem(ROW, COLUMN_INDEX, item_check)
+    return item_check
+
+def CELL_CHECKBOX(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], STATE: bool = False) -> CheckBoxCell:
     '''
     setCellWidget -> QWidget
     '''
@@ -417,37 +455,38 @@ def CELL_CHECKBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, STATE: bool 
         checkBox.setChecked(False)
     ##
     TABLE.setCellWidget(ROW, COLUMN_INDEX, checkBox)
+    return checkBox
 
-def CELL_CHECKBOX_LAYOUT(TABLE: QTableWidget, ROW: int, COLUMN: int | str, STATE: bool = False) -> QCheckBox:
-    '''
-    setCellWidget -> QWidget <QCheckBox>
-    Set the QCheckBox centered into cell
-    '''
-    COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
-    ##
-    widget = QWidget()
-    # item = QCheckBox()
-    # if STATE == 1 or STATE == "1" or STATE == True or STATE == "TRUE":
-    #     item.setChecked(True)
-    # else:
-    #     item.setChecked(False)
-    checkbox = QCheckBox()
-    checkbox.setChecked(bool(STATE in [1, "1", True, "TRUE"]))
-    def select_cell() -> None:
-        TABLE.setCurrentCell(ROW, COLUMN_INDEX)
-    # item.stateChanged.connect(select_cell)
-    layout = QHBoxLayout()
-    layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-    # layout.addWidget(item)
-    layout.addWidget(checkbox)
-    layout.setContentsMargins(0,0,0,0)
-    widget.setLayout(layout)
-    ##
-    TABLE.setCellWidget(ROW, COLUMN_INDEX, widget)
+# def CELL_CHECKBOX_LAYOUT(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], STATE: bool = False) -> QCheckBox:
+#     '''
+#     setCellWidget -> QWidget <QCheckBox>
+#     Set the QCheckBox centered into cell
+#     '''
+#     COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
+#     ##
+#     widget = QWidget()
+#     # item = QCheckBox()
+#     # if STATE == 1 or STATE == "1" or STATE == True or STATE == "TRUE":
+#     #     item.setChecked(True)
+#     # else:
+#     #     item.setChecked(False)
+#     checkbox = QCheckBox()
+#     checkbox.setChecked(bool(STATE in [1, "1", True, "TRUE"]))
+#     def select_cell() -> None:
+#         TABLE.setCurrentCell(ROW, COLUMN_INDEX)
+#     # item.stateChanged.connect(select_cell)
+#     layout = QHBoxLayout()
+#     layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+#     # layout.addWidget(item)
+#     layout.addWidget(checkbox)
+#     layout.setContentsMargins(0,0,0,0)
+#     widget.setLayout(layout)
+#     ##
+#     TABLE.setCellWidget(ROW, COLUMN_INDEX, widget)
 
-    return checkbox
+#     return checkbox
 
-def CELL_SPINBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, VALUE: int, MIN: int = 0, MAX: int = 99):
+def CELL_SPINBOX(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], VALUE: int, MIN: int = 0, MAX: int = 99) -> QSpinBox:
     '''
     setCellWidget -> QSpinBox
     '''
@@ -459,8 +498,9 @@ def CELL_SPINBOX(TABLE: QTableWidget, ROW: int, COLUMN: int | str, VALUE: int, M
     widget.setValue(VALUE)
     ##
     TABLE.setCellWidget(ROW, COLUMN_INDEX, widget)
+    return widget
 
-def CELL_DATEEDIT(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> None:
+def CELL_DATEEDIT(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str]) -> QDateEdit:
     '''
     setCellWidget -> QDateEdit
     '''
@@ -472,8 +512,23 @@ def CELL_DATEEDIT(TABLE: QTableWidget, ROW: int, COLUMN: int | str) -> None:
     widget.setDisplayFormat("yyyy-MM-dd")
     ##
     TABLE.setCellWidget(ROW, COLUMN_INDEX, widget)
+    return widget
 
-def CELL_FONT(TABLE: QTableWidget, ROW: int, COLUMN: int | str, SIZE: int=10, BOLD: bool=True, fontFamily="Consolas"):
+def CELL_TIMEEDIT(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str]) -> QTimeEdit:
+    '''
+    setCellWidget -> QTimeEdit
+    '''
+    COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
+    widget = QTimeEdit()
+    widget.setMinimumTime(QTime(0,0,0))
+    widget.setTime(QTime(1,15))
+    widget.setButtonSymbols(QTimeEdit.NoButtons)
+    widget.setReadOnly(True)
+    ##
+    TABLE.setCellWidget(ROW, COLUMN_INDEX, widget)
+    return widget
+
+def CELL_FONT(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], SIZE: int=10, BOLD: bool=True, fontFamily="Consolas"):
     '''
     INCOMPLETE
     '''
@@ -499,7 +554,7 @@ class COLORS(Enum):
     # BLACK = QColor
     # GREY = QColor
 
-def CELL_COLOR(TABLE: QTableWidget, ROW: int, COLUMN: int | str, COLOR: QColor) -> None:
+def CELL_COLOR(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], COLOR: QColor) -> None:
     '''
     Set the backgroung Color of a cel with selected str color
     BUG: Incomplete
@@ -520,7 +575,7 @@ class TBL_FIELD_FORMAT:
     FIELD_NAME: str
     COLUMN: int
     ALIAS: str
-    TYPE_DATA: bool | str | int | float
+    TYPE_DATA: Union[bool, str, int, float]
     DATA: list
     WIDTH: int = None
     PROTECT: bool = False
@@ -604,21 +659,22 @@ def TBL_POP_PANDAS_DF(TABLE: QTableWidget, DATAFRAME: 'pd.DataFrame', HIDE_COLUM
     TABLE.resizeColumnsToContents()
     TABLE.setEnabled(True)
 
-def TBL_GET_HEADERS(TABLE: QTableWidget) -> list:
+def TBL_GET_HEADERS(TABLE: QTableWidget) -> List[str]:
     '''
     Get a list of horizontal headers in the selected Qtable
 
     ** If header name is empty, function return the int of column
     '''
-    HEADERS: list = []
-    for head in range(TABLE.columnCount()):
-        header_text = TABLE.horizontalHeaderItem(head).text()
-        if header_text == "" or header_text == None: 
-            header_text = head
-        HEADERS.append(header_text)
-    return HEADERS
+    # HEADERS: list = []
+    # for head in range(TABLE.columnCount()):
+    #     header_text = TABLE.horizontalHeaderItem(head).text()
+    #     if header_text == "" or header_text == None: 
+    #         header_text = head
+    #     HEADERS.append(header_text)
+    # return HEADERS
+    return [TABLE.horizontalHeaderItem(i).text() for i in range(TABLE.columnCount())]
 
-def TBL_GET_HEADER_INDEX(TABLE: QTableWidget, COLUMN: int | str) -> int:
+def TBL_GET_HEADER_INDEX(TABLE: QTableWidget, COLUMN: Union[int, str]) -> int:
     '''
     Get the index value of selected Header
 
@@ -628,11 +684,18 @@ def TBL_GET_HEADER_INDEX(TABLE: QTableWidget, COLUMN: int | str) -> int:
         return COLUMN
     elif type(COLUMN) == str:
         HEADERS = TBL_GET_HEADERS(TABLE)
-        if COLUMN in HEADERS: 
-            return HEADERS.index(COLUMN)
-        else:
-            print(f"CELL_RD ERROR / WRONG HEADER NAME [{COLUMN}]")
-            return None
+        # if COLUMN in HEADERS: 
+        #     return HEADERS.index(COLUMN)
+        # else:
+        #     print(f"CELL_RD ERROR / WRONG HEADER NAME [{COLUMN}]")
+        #     return None
+        return HEADERS.index(COLUMN) if COLUMN in HEADERS else None
+
+def TBL_FIELD_RESIZE(TABLE: QTableWidget, header: Union[int, str]) -> None:
+    '''
+    '''
+    header_indx = TBL_GET_HEADER_INDEX(TABLE, COLUMN=header)
+    TABLE.horizontalHeader().setSectionResizeMode(header_indx, QHeaderView.ResizeMode.Fixed)
 
 def TBL_GET_PANDAS_DF(TABLE: QTableWidget) -> 'pd.DataFrame':
     '''
