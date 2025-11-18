@@ -18,6 +18,7 @@ from enum import Enum, auto
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt, QEventLoop, QTimer, QDate, QTime, QUrl
 from PySide6.QtGui import QFont, QDesktopServices, QPalette, QColor
+from PySide6.QtTest import QTest # For delays
 
 
 
@@ -28,15 +29,16 @@ def TIME_SLEEP(SEG: float=1):
     '''
     time.sleep function for use with PyQt 
     '''
-    time = float(SEG) * 1000
-    try:
-        time = int(time)
-    except:
-        time = 10
-        print(f"TIME_SLEEP ERROR / TIME (s): {SEG}")
-    loop = QEventLoop()
-    QTimer.singleShot(time, loop.quit)
-    loop.exec()
+    # time = float(SEG) * 1000
+    # try:
+    #     time = int(time)
+    # except:
+    #     time = 10
+    #     print(f"TIME_SLEEP ERROR / TIME (s): {SEG}")
+    # loop = QEventLoop()
+    # QTimer.singleShot(time, loop.quit)
+    # loop.exec()
+    QTest.qWait(int(SEG * 1000))
 
 def DATE_STR_CONVERTER(DATE: str = "2023-01-01") -> QDate:
     '''
@@ -122,6 +124,11 @@ def MyFusionStyle(app: QApplication):
 
     def change_AlternateBase():
         palette = app.palette()
+
+        blue = QColor("#2A82DA")
+        palette.setColor(QPalette.Active, QPalette.Highlight, blue)
+        palette.setColor(QPalette.Inactive, QPalette.Highlight, blue)
+
         scheme = app.styleHints().colorScheme()
         if scheme == Qt.ColorScheme.Dark:
             palette.setColor(QPalette.AlternateBase, QColor(70, 70, 70))   # gris oscuro

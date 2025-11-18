@@ -80,6 +80,7 @@ from .__forms import PYSIDE_QLIST_FORM
 from .__forms import PYSIDE_QTABLE_FORM
 from .__forms import PYSIDE_QMARKDOWN
 from .__forms import PYSIDE_QACQUISITIONS
+from .__forms import PYSIDE_QTEXT_FORM
 
 class QLIST(QDialog):
     '''
@@ -424,4 +425,30 @@ class QACQUISITIONS(QDialog):
                 self.data[CELL_RD(self.ui.tbl_values, row, 0)].append(0.0)
 
 class QTEXT_FORM(QDialog):
-    ...
+    def __init__(self, TEXT: str = None, info: str = str(), Window_Title: str="ACQUISITIONS", icon: QIcon = None):
+        QDialog.__init__(self)
+        self.data: str = None
+
+        ''' INIT '''
+        self.ui = PYSIDE_QTEXT_FORM.Ui_Dialog()
+        self.ui.setupUi(self)
+
+        ''' WIDGETS '''
+        self.setWindowIcon(QIcon(":/__forms/info.ico"))
+        if icon: self.setWindowIcon(icon)
+        self.setWindowTitle(Window_Title)
+        # self.ui.btn_exit.clicked.connect(self.exitdialog)
+
+        self.ui.text.setPlainText(TEXT)
+
+    def exitdialog(self):
+        self.data = self.ui.text.toPlainText()
+        if YESNOBOX("DO YOU WANT SAVE THIS DATA?", winTitle=self.data) == True:
+            self.close()
+        else:
+            self.data = None
+            return
+
+    def closeEvent(self, event):
+        self.exitdialog()
+        super().closeEvent(event)

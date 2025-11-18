@@ -1,5 +1,14 @@
 '''
 Toolkit with simplified functions and methods for development with PySide6
+
+INCOMPLETE:
+
+- QTime edit wraps
+
+PLANNED:
+
+- 
+
 '''
 __author__ = 'PABLO GONZALEZ PILA <pablogonzalezpila@gmail.com>'
 __update__ = '2025.10.28'
@@ -34,9 +43,14 @@ class CheckBoxCell(QWidget):
     '''
     # Reemitimos la señal del checkbox
     stateChanged = Signal(int)
+    # cellStateChanged = Signal(int, int, bool)       # (row, column, checked)
 
-    def __init__(self, checked=False, parent=None):
+    def __init__(self, checked=False, parent=None, parent_table: QTableWidget = None, row: int = None, column: int = None):
         super().__init__(parent)
+
+        self.parent_table = parent_table
+        self.row = row
+        self.column = column
 
         self.checkbox = QCheckBox()
         self.checkbox.setChecked(checked)
@@ -47,6 +61,7 @@ class CheckBoxCell(QWidget):
         layout.addWidget(self.checkbox)
 
         # Reemitir la señal
+        self.checkbox.stateChanged.connect(self._on_state_changed)
         self.checkbox.stateChanged.connect(self.stateChanged.emit)
 
     def isChecked(self):
@@ -54,6 +69,26 @@ class CheckBoxCell(QWidget):
 
     def setChecked(self, value: bool):
         self.checkbox.setChecked(value)
+
+    def _on_state_changed(self, state: int):
+        """Cuando cambia el estado, actualiza la celda actual si la tabla es conocida."""
+        if self.parent_table and self.row is not None and self.column is not None:
+            # 🔹 Actualizamos la celda activa en la tabla
+            self.parent_table.setCurrentCell(self.row, self.column)
+
+    # def _on_state_changed(self, state: int):
+    #     """
+    #     Cuando cambia el estado:
+    #     - Actualiza la celda actual (currentCell)
+    #     - Emite una señal con (row, column, checked)
+    #     """
+    #     if self.parent_table and self.row is not None and self.column is not None:
+    #         self.parent_table.setCurrentCell(self.row, self.column)
+
+    #         # 🔹 Emitir señal extendida
+    #         self.cellStateChanged.emit(self.row, self.column, self.isChecked())
+
+
 
 def WIDGET_WR(WIDGET: QWidget, VALUE: Any) -> None:
     '''
@@ -121,9 +156,9 @@ def WIDGET_WR(WIDGET: QWidget, VALUE: Any) -> None:
                 if time and time.isValid():
                     WIDGET.setTime(time)
                 else:
-                    WIDGET.setDate(QDate(WIDGET.minimumDate()))
+                    WIDGET.setTime(QTime(WIDGET.minimumDate()))
             else:
-                WIDGET.setDate(QDate(WIDGET.minimumDate()))
+                WIDGET.setTime(QTime(WIDGET.minimumDate()))
         case QPushButton():
             WIDGET.setText(str(VALUE))
         case QWidget(): # <LAYOUT>
@@ -396,6 +431,41 @@ def CELL_READONLY(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str]) -> Non
     ITEM.setFlags(ITEM.flags() ^ Qt.ItemFlag.ItemIsEditable)
     TABLE.setItem(ROW, COLUMN_INDEX, ITEM)
 
+def CELL_EDITABLE(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], EDITABLE: bool) -> None:
+    """
+    Activa o desactiva la edición de una celda en un QTableWidget.
+
+    Args:
+        TABLE: QTableWidget donde está la celda.
+        ROW: Fila de la celda.
+        COLUMN: Índice o nombre de columna (usa TBL_GET_HEADER_INDEX).
+        EDITABLE: True para editable, False para solo lectura.
+    """
+    COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
+
+    # --- Caso 1: la celda tiene un widget incrustado (QLineEdit, QComboBox, etc.)
+    CELL: QWidget = TABLE.cellWidget(ROW, COLUMN_INDEX)
+    if CELL:
+        CELL.setEnabled(EDITABLE)
+        return
+
+    # --- Caso 2: la celda tiene un QTableWidgetItem
+    ITEM: QTableWidgetItem = TABLE.item(ROW, COLUMN_INDEX)
+    if not ITEM:
+        ITEM = QTableWidgetItem()
+        TABLE.setItem(ROW, COLUMN_INDEX, ITEM)
+
+    FLAGS = ITEM.flags()
+
+    if EDITABLE:
+        # Agregamos la bandera de edición
+        FLAGS |= Qt.ItemFlag.ItemIsEditable
+    else:
+        # Quitamos la bandera de edición
+        FLAGS &= ~Qt.ItemFlag.ItemIsEditable
+
+    ITEM.setFlags(FLAGS)
+
 def CELL_TX(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], TEXT: Any) -> QTableWidgetItem:
     '''
     Set Text Item in selected cell
@@ -446,14 +516,15 @@ def CELL_CHECKBOX(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], STATE:
     setCellWidget -> QWidget
     '''
     COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
-    ##
+
     # checkBox = QCheckBox()
-    checkBox = CheckBoxCell()
-    if STATE == 1 or STATE == True or STATE == "TRUE":
-        checkBox.setChecked(True)
-    else:
-        checkBox.setChecked(False)
-    ##
+    checkBox = CheckBoxCell(
+        checked=bool(STATE),
+        parent_table=TABLE, 
+        row=ROW, 
+        column=COLUMN_INDEX
+    )
+
     TABLE.setCellWidget(ROW, COLUMN_INDEX, checkBox)
     return checkBox
 
@@ -514,16 +585,19 @@ def CELL_DATEEDIT(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str]) -> QDa
     TABLE.setCellWidget(ROW, COLUMN_INDEX, widget)
     return widget
 
-def CELL_TIMEEDIT(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str]) -> QTimeEdit:
+def CELL_TIMEEDIT(TABLE: QTableWidget, ROW: int, COLUMN: Union[int, str], TIME: Union[QTime, str]) -> QTimeEdit:
     '''
     setCellWidget -> QTimeEdit
     '''
     COLUMN_INDEX = TBL_GET_HEADER_INDEX(TABLE, COLUMN)
     widget = QTimeEdit()
     widget.setMinimumTime(QTime(0,0,0))
-    widget.setTime(QTime(1,15))
+    if isinstance(TIME, QTime):
+        widget.setTime(TIME)
+    elif isinstance(TIME, str):
+        widget.setTime(TIME_STR_CONVERTER(TIME))
     widget.setButtonSymbols(QTimeEdit.NoButtons)
-    widget.setReadOnly(True)
+    # widget.setReadOnly(True)
     ##
     TABLE.setCellWidget(ROW, COLUMN_INDEX, widget)
     return widget
