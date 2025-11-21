@@ -32,6 +32,8 @@ def INFOBOX(info: str, winTitle: str = "INFO", icon: QIcon = None) -> None:
     infobox.setWindowIcon(QIcon(":/__forms/info.ico"))
     if icon:
         infobox.setWindowIcon(icon)
+
+    infobox.setMinimumWidth(400)
     infobox.exec()
 
 def YESNOBOX(info: str, winTitle: str = "QUESTION", icon: QIcon = None) -> bool:
@@ -441,14 +443,24 @@ class QTEXT_FORM(QDialog):
 
         self.ui.text.setPlainText(TEXT)
 
-    def exitdialog(self):
-        self.data = self.ui.text.toPlainText()
-        if YESNOBOX("DO YOU WANT SAVE THIS DATA?", winTitle=self.data) == True:
-            self.close()
-        else:
-            self.data = None
-            return
+    # def exitdialog(self):
+    #     self.data = self.ui.text.toPlainText()
+    #     return YESNOBOX("DO YOU WANT SAVE THIS DATA?", winTitle=self.data)
 
     def closeEvent(self, event):
-        self.exitdialog()
-        super().closeEvent(event)
+        # self.data = self.ui.text.toPlainText()
+        if YESNOBOX("DO YOU WANT SAVE THIS DATA?", winTitle=self.data):
+            self.data = self.ui.text.toPlainText()
+            event.accept()
+        else:
+            self.data = None
+            event.ignore()
+        # super().closeEvent(event)
+
+
+    def reject(self):
+        # ESC o botones que llaman reject()
+        event = QCloseEvent()
+        self.closeEvent(event)
+        if event.isAccepted():
+            super().reject()

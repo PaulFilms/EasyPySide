@@ -194,7 +194,9 @@ def WIDGET_RD(WIDGET: QWidget) -> Any:
             return WIDGET.isChecked()
         case CheckBoxCell():
             return WIDGET.isChecked()
-        case QSpinBox() | QDoubleSpinBox():
+        case QSpinBox():
+            return WIDGET.value()
+        case QDoubleSpinBox():
             return WIDGET.value()
         case QDateEdit():
             return DATE_QDATE_CONVERTER(WIDGET.date())
@@ -654,6 +656,13 @@ class TBL_FIELD_FORMAT:
     WIDTH: int = None
     PROTECT: bool = False
     HIDE: bool = False
+
+# @dataclass
+# class TBL_FIELD:
+#     id: int
+#     width: int = None
+#     resize: bool = True
+#     hide: bool = False
 
 def TBL_INIT(TABLE: QTableWidget) -> None:
     '''
